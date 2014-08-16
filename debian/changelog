@@ -1,0 +1,5 @@
+linux (1:3.2.61-1) wheezy; urgency=low
+
+  * Initial release.
+
+ -- Charles Leclerc <charles@la-mouette.net>  Tue, 29 Jul 2014 14:55:00 +0200
