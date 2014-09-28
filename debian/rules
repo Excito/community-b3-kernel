@@ -82,7 +82,9 @@ override_dh_auto_install: install_headers
 override_dh_auto_install:
 	+$(MAKE_CLEAN) -C '$(SOURCE_DIR)' INSTALL_MOD_PATH='$(CURDIR)/$(PACKAGE_DIR)' INSTALL_MOD_STRIP=1 modules_install
 	mkdir -p debian/$(PACKAGE)/boot
-	cp '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/uImage debian/$(PACKAGE)/boot
+	mv '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/zImage '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/zImage.old 
+	
+
 	cp '$(SOURCE_DIR)'/.config $(PACKAGE_DIR)/boot/config-$(call REAL_VERSION)
 	cp '$(SOURCE_DIR)'/System.map $(PACKAGE_DIR)/boot/System.map-$(call REAL_VERSION)
 	find $(PACKAGE_DIR)/lib/modules/$(call REAL_VERSION)/ -mindepth 1 -maxdepth 1 \! -name kernel \! -name modules.order \! -name modules.builtin -exec rm {} \+
@@ -128,6 +130,17 @@ endif
 override_dh_auto_build: SOURCE_DIR=$(BUILD_DIR)/source
 override_dh_auto_build:
 	+$(MAKE_CLEAN) -C '$(SOURCE_DIR)'
+# L2 cache patch
+ifeq ($(DEB_HOST_ARCH),armel)
+	mv '$(SOURCE_DIR)'/arch/arm/boot/zImage '$(SOURCE_DIR)'/arch/arm/boot/zImage.pre
+	echo -n -e \\x11\\x3f\\x3f\\xee > '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	echo -n -e \\x01\\x35\\xc3\\xe3 >> '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	echo -n -e \\x11\\x3f\\x2f\\xee >> '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	echo -n -e \\x00\\x30\\xa0\\xe3 >> '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	echo -n -e \\x17\\x3f\\x07\\xee >> '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	cat '$(SOURCE_DIR)'/arch/arm/boot/zImage.pre >> '$(SOURCE_DIR)'/arch/arm/boot/zImage
+	rm '$(SOURCE_DIR)'/arch/arm/boot/zImage.pre
+endif
 	+$(MAKE_CLEAN) -C '$(SOURCE_DIR)' uImage
 ifeq ($(DEB_HOST_ARCH),powerpc)
 	$(call device_tree_compile, debian/dts/bubba.dts)
@@ -146,3 +159,5 @@ override_dh_clean:
 override_dh_auto_clean: SOURCE_DIR=$(BUILD_DIR)/source
 override_dh_auto_clean:
 	+test ! -e $(SOURCE_DIR) || $(MAKE_CLEAN) -C '$(SOURCE_DIR)' clean
+
+override_dh_auto_strip:
