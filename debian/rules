@@ -82,9 +82,7 @@ override_dh_auto_install: install_headers
 override_dh_auto_install:
 	+$(MAKE_CLEAN) -C '$(SOURCE_DIR)' INSTALL_MOD_PATH='$(CURDIR)/$(PACKAGE_DIR)' INSTALL_MOD_STRIP=1 modules_install
 	mkdir -p debian/$(PACKAGE)/boot
-	mv '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/zImage '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/zImage.old 
-	
-
+	cp '$(SOURCE_DIR)'/arch/$(DEB_HOST_ARCH_CPU)/boot/uImage debian/$(PACKAGE)/boot
 	cp '$(SOURCE_DIR)'/.config $(PACKAGE_DIR)/boot/config-$(call REAL_VERSION)
 	cp '$(SOURCE_DIR)'/System.map $(PACKAGE_DIR)/boot/System.map-$(call REAL_VERSION)
 	find $(PACKAGE_DIR)/lib/modules/$(call REAL_VERSION)/ -mindepth 1 -maxdepth 1 \! -name kernel \! -name modules.order \! -name modules.builtin -exec rm {} \+
